@@ -66,7 +66,9 @@ export function AppointmentsPage({ data, refresh, setError }) {
               <span>{appointment.service_item?.name} · {appointment.beautician || '未分配'}</span>
               <p>{appointment.notes || '无备注'}</p>
             </div>
-            <span className="badge">{appointment.status}</span>
+            <span className={appointment.status === 'completed' ? 'badge done' : 'badge warn'}>
+              {appointment.status === 'completed' ? '已完成' : '待处理'}
+            </span>
           </article>
         ))}
       </div>
