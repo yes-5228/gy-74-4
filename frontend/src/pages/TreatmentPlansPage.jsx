@@ -39,10 +39,16 @@ export function TreatmentPlansPage({ data, refresh, setError, setSuccess }) {
     if (consumingIds.has(plan.id)) return
     setConsumingIds((prev) => new Set(prev).add(plan.id))
     try {
-      await api.consumeTreatmentSession(plan.id)
+      const result = await api.consumeTreatmentSession(plan.id)
       await refresh()
       const remaining = Math.max(plan.sessions_total - (plan.sessions_used + 1), 0)
-      setSuccess(`扣次成功！${plan.customer_name} 的「${plan.package?.name || '疗程卡'}」剩余 ${remaining} 次`)
+      let msg = `扣次成功！${plan.customer_name} 的「${plan.package?.name || '疗程卡'}」剩余 ${remaining} 次`
+      if (result.completed_appointment) {
+        const apt = result.completed_appointment
+        const aptTime = apt.scheduled_at ? new Date(apt.scheduled_at).toLocaleString('zh-CN') : ''
+        msg += `，关联预约「${apt.service_item_name || '护理项目'}${aptTime ? ' ' + aptTime : ''}」已自动完成`
+      }
+      setSuccess(msg)
     } catch (err) {
       setError(err.message)
     } finally {

@@ -158,6 +158,16 @@ h2 {
   color: #9f3126;
 }
 
+.badge.done {
+  background: #e2f3e8;
+  color: #25684a;
+}
+
+.badge.warn {
+  background: #fff3e0;
+  color: #a0622a;
+}
+
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -239,6 +249,13 @@ td small {
   gap: 14px;
   padding: 12px 0;
   border-top: 1px solid #eee9e3;
+}
+
+.list-row-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
 }
 
 .list-row div,

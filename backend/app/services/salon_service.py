@@ -183,16 +183,26 @@ def consume_treatment_session(db: Session, plan_id: int) -> dict:
         select(Appointment)
         .where(Appointment.treatment_plan_id == plan_id)
         .where(Appointment.status == "booked")
+        .options(selectinload(Appointment.service_item))
         .order_by(Appointment.scheduled_at.asc())
         .limit(1)
         .with_for_update()
     )
     appointment = db.scalar(apt_stmt)
+    completed_appointment = None
     if appointment:
         appointment.status = "completed"
+        completed_appointment = {
+            "customer_name": appointment.customer_name,
+            "service_item_name": appointment.service_item.name if appointment.service_item else None,
+            "scheduled_at": appointment.scheduled_at.isoformat() if appointment.scheduled_at else None,
+        }
 
     db.commit()
-    return get_treatment_plan(db, plan_id)
+    return {
+        "plan": get_treatment_plan(db, plan_id),
+        "completed_appointment": completed_appointment,
+    }
 
 
 def list_appointments(db: Session) -> list[Appointment]:

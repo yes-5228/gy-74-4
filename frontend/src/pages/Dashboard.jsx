@@ -32,7 +32,12 @@ export function Dashboard({ data }) {
                   <strong>{appointment.customer_name}</strong>
                   <span>{appointment.service_item?.name}</span>
                 </div>
-                <time>{new Date(appointment.scheduled_at).toLocaleString('zh-CN')}</time>
+                <div className="list-row-right">
+                  <time>{new Date(appointment.scheduled_at).toLocaleString('zh-CN')}</time>
+                  <span className={appointment.status === 'completed' ? 'badge done' : 'badge warn'}>
+                    {appointment.status === 'completed' ? '已完成' : '待处理'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

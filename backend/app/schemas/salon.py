@@ -136,6 +136,11 @@ class AppointmentRead(AppointmentBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ConsumeSessionResponse(BaseModel):
+    plan: TreatmentPlanRead
+    completed_appointment: dict | None = None
+
+
 class ReminderRead(BaseModel):
     id: int
     customer_name: str
