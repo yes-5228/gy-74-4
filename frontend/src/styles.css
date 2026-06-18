@@ -394,6 +394,11 @@ td small {
   color: #8c2e25;
 }
 
+.alert.success {
+  background: #e2f3e8;
+  color: #25684a;
+}
+
 .empty-state {
   background: #fff;
   border: 1px dashed #d8d0c8;

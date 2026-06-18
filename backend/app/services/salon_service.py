@@ -178,6 +178,19 @@ def consume_treatment_session(db: Session, plan_id: int) -> dict:
     plan.sessions_used += 1
     if plan.sessions_used >= plan.sessions_total:
         plan.status = "completed"
+
+    apt_stmt = (
+        select(Appointment)
+        .where(Appointment.treatment_plan_id == plan_id)
+        .where(Appointment.status == "booked")
+        .order_by(Appointment.scheduled_at.asc())
+        .limit(1)
+        .with_for_update()
+    )
+    appointment = db.scalar(apt_stmt)
+    if appointment:
+        appointment.status = "completed"
+
     db.commit()
     return get_treatment_plan(db, plan_id)
 

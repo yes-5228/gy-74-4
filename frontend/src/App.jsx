@@ -36,6 +36,7 @@ export default function App() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const refresh = async () => {
     setError('')
@@ -55,7 +56,13 @@ export default function App() {
       .finally(() => setLoading(false))
   }, [])
 
-  const pageProps = useMemo(() => ({ data, refresh, setError }), [data])
+  useEffect(() => {
+    if (!success) return
+    const timer = setTimeout(() => setSuccess(''), 3000)
+    return () => clearTimeout(timer)
+  }, [success])
+
+  const pageProps = useMemo(() => ({ data, refresh, setError, setSuccess }), [data])
 
   const content = {
     dashboard: <Dashboard data={data} />,
@@ -73,6 +80,7 @@ export default function App() {
       onNavigate={setActiveView}
       loading={loading}
       error={error}
+      success={success}
     >
       {content}
     </AppShell>

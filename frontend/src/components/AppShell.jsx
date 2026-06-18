@@ -1,6 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 
-export function AppShell({ navItems, activeView, onNavigate, loading, error, children }) {
+export function AppShell({ navItems, activeView, onNavigate, loading, error, success, children }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -40,6 +40,7 @@ export function AppShell({ navItems, activeView, onNavigate, loading, error, chi
           </div>
         </header>
         {error && <div className="alert">{error}</div>}
+        {success && <div className="alert success">{success}</div>}
         {loading ? <div className="empty-state">正在加载门店数据...</div> : children}
       </main>
     </div>

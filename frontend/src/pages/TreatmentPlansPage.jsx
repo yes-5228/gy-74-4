@@ -12,7 +12,7 @@ const initialForm = {
   expires_at: '',
 }
 
-export function TreatmentPlansPage({ data, refresh, setError }) {
+export function TreatmentPlansPage({ data, refresh, setError, setSuccess }) {
   const [form, setForm] = useState(initialForm)
   const [consumingIds, setConsumingIds] = useState(() => new Set())
 
@@ -35,18 +35,20 @@ export function TreatmentPlansPage({ data, refresh, setError }) {
     }
   }
 
-  const handleConsume = async (planId) => {
-    if (consumingIds.has(planId)) return
-    setConsumingIds((prev) => new Set(prev).add(planId))
+  const handleConsume = async (plan) => {
+    if (consumingIds.has(plan.id)) return
+    setConsumingIds((prev) => new Set(prev).add(plan.id))
     try {
-      await api.consumeTreatmentSession(planId)
+      await api.consumeTreatmentSession(plan.id)
       await refresh()
+      const remaining = Math.max(plan.sessions_total - (plan.sessions_used + 1), 0)
+      setSuccess(`扣次成功！${plan.customer_name} 的「${plan.package?.name || '疗程卡'}」剩余 ${remaining} 次`)
     } catch (err) {
       setError(err.message)
     } finally {
       setConsumingIds((prev) => {
         const next = new Set(prev)
-        next.delete(planId)
+        next.delete(plan.id)
         return next
       })
     }
@@ -95,7 +97,7 @@ export function TreatmentPlansPage({ data, refresh, setError }) {
                   <td>
                     <button
                       className="secondary-button"
-                      onClick={() => handleConsume(plan.id)}
+                      onClick={() => handleConsume(plan)}
                       disabled={isDisabled}
                     >
                       {isConsuming ? <Loader2 size={15} className="spin" /> : <MinusCircle size={15} />}
