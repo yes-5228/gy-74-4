@@ -10,6 +10,12 @@ export function Dashboard({ data }) {
   const bookedAppointments = data.appointments.filter((appointment) => appointment.status === 'booked')
   const packageRevenue = data.packages.reduce((sum, item) => sum + Number(item.price || 0), 0)
 
+  const getReminderBadgeClass = (daysLeft) => {
+    if (daysLeft < 0) return 'badge danger'
+    if (daysLeft <= 7) return 'badge warn'
+    return 'badge'
+  }
+
   return (
     <div className="page-stack">
       <section className="stats-grid">
@@ -55,7 +61,7 @@ export function Dashboard({ data }) {
                   <strong>{reminder.customer_name}</strong>
                   <span>{reminder.package_name}</span>
                 </div>
-                <span className={reminder.days_left < 0 ? 'badge danger' : 'badge'}>
+                <span className={getReminderBadgeClass(reminder.days_left)}>
                   {reminder.days_left} 天
                 </span>
               </div>

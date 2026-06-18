@@ -104,7 +104,9 @@ export function TreatmentPlansPage({ data, refresh, setError, setSuccess }) {
                   <td>{plan.package?.name}</td>
                   <td>{plan.sessions_used}/{plan.sessions_total}</td>
                   <td>{new Date(plan.expires_at).toLocaleDateString('zh-CN')}</td>
-                  <td><span className="badge">{plan.status}</span></td>
+                  <td><span className={plan.status === 'completed' ? 'badge done' : 'badge warn'}>
+                    {plan.status === 'completed' ? '已完成' : '进行中'}
+                  </span></td>
                   <td>
                     <button
                       className="secondary-button"
