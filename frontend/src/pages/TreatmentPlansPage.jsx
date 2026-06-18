@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MinusCircle } from 'lucide-react'
+import { Loader2, MinusCircle } from 'lucide-react'
 import { api } from '../api/client'
 import { SelectInput, SubmitButton, TextInput } from '../components/Forms'
 import { SectionHeader } from '../components/SectionHeader'
@@ -14,6 +14,7 @@ const initialForm = {
 
 export function TreatmentPlansPage({ data, refresh, setError }) {
   const [form, setForm] = useState(initialForm)
+  const [consumingIds, setConsumingIds] = useState(() => new Set())
 
   const submit = async (event) => {
     event.preventDefault()
@@ -31,6 +32,23 @@ export function TreatmentPlansPage({ data, refresh, setError }) {
       await refresh()
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  const handleConsume = async (planId) => {
+    if (consumingIds.has(planId)) return
+    setConsumingIds((prev) => new Set(prev).add(planId))
+    try {
+      await api.consumeTreatmentSession(planId)
+      await refresh()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setConsumingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(planId)
+        return next
+      })
     }
   }
 
@@ -64,28 +82,29 @@ export function TreatmentPlansPage({ data, refresh, setError }) {
             </tr>
           </thead>
           <tbody>
-            {data.treatmentPlans.map((plan) => (
-              <tr key={plan.id}>
-                <td>{plan.customer_name}<small>{plan.customer_phone}</small></td>
-                <td>{plan.package?.name}</td>
-                <td>{plan.sessions_used}/{plan.sessions_total}</td>
-                <td>{new Date(plan.expires_at).toLocaleDateString('zh-CN')}</td>
-                <td><span className="badge">{plan.status}</span></td>
-                <td>
-                  <button
-                    className="secondary-button"
-                    onClick={async () => {
-                      await api.consumeTreatmentSession(plan.id)
-                      await refresh()
-                    }}
-                    disabled={plan.sessions_remaining <= 0}
-                  >
-                    <MinusCircle size={15} />
-                    <span>扣次</span>
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {data.treatmentPlans.map((plan) => {
+              const isConsuming = consumingIds.has(plan.id)
+              const isDisabled = plan.sessions_remaining <= 0 || isConsuming
+              return (
+                <tr key={plan.id}>
+                  <td>{plan.customer_name}<small>{plan.customer_phone}</small></td>
+                  <td>{plan.package?.name}</td>
+                  <td>{plan.sessions_used}/{plan.sessions_total}</td>
+                  <td>{new Date(plan.expires_at).toLocaleDateString('zh-CN')}</td>
+                  <td><span className="badge">{plan.status}</span></td>
+                  <td>
+                    <button
+                      className="secondary-button"
+                      onClick={() => handleConsume(plan.id)}
+                      disabled={isDisabled}
+                    >
+                      {isConsuming ? <Loader2 size={15} className="spin" /> : <MinusCircle size={15} />}
+                      <span>{isConsuming ? '扣次中' : '扣次'}</span>
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

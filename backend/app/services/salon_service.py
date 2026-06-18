@@ -157,8 +157,23 @@ def update_treatment_plan(db: Session, plan_id: int, payload: TreatmentPlanUpdat
 
 
 def consume_treatment_session(db: Session, plan_id: int) -> dict:
-    plan = _get_or_404(db, TreatmentPlan, plan_id)
+    stmt = (
+        select(TreatmentPlan)
+        .where(TreatmentPlan.id == plan_id)
+        .options(
+            selectinload(TreatmentPlan.package)
+            .selectinload(CarePackage.items)
+            .selectinload(PackageItem.service_item)
+        )
+        .with_for_update()
+    )
+    plan = db.scalar(stmt)
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Treatment plan not found")
     if plan.sessions_used >= plan.sessions_total:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No sessions remaining")
+    remaining = plan.sessions_total - plan.sessions_used
+    if remaining <= 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No sessions remaining")
     plan.sessions_used += 1
     if plan.sessions_used >= plan.sessions_total:
